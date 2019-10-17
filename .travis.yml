@@ -34,13 +34,6 @@ matrix:
       env:
         - NPROC=6 # Worth trying more than 2 parallel jobs: https://travis-ci.community/t/no-cache-support-on-arm64/5416/8
         # (also used to get a different cache key than the amd64 one)
-        - export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"
-    - os: linux
-      arch: arm64
-      sudo: required
-      env:
-        - NPROC=6 # Worth trying more than 2 parallel jobs: https://travis-ci.community/t/no-cache-support-on-arm64/5416/8
-        # (also used to get a different cache key than the amd64 one)
       before_install:
         - export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"
         - sudo apt-get -q update
@@ -60,7 +53,7 @@ install:
 
 script:
   - set -e # fail fast
+  - make -j${NPROC} NIMFLAGS="--parallelBuild:${NPROC}" update # to allow a newer Nim version to be detected
   - make -j${NPROC} NIMFLAGS="--parallelBuild:${NPROC}"
-  - make -j${NPROC} NIMFLAGS="--parallelBuild:${NPROC}" DISABLE_LFS_SCRIPT=1 test
   - make -j${NPROC} NIMFLAGS="--parallelBuild:${NPROC}" DISABLE_LFS_SCRIPT=1 test
 

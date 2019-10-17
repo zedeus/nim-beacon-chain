@@ -17,7 +17,7 @@ TOOLS := beacon_node bench_bls_sig_agggregation state_sim ncli_hash_tree_root nc
 TOOLS_DIRS := beacon_chain benchmarks research ncli tests/simulation
 TOOLS_CSV := $(subst $(SPACE),$(COMMA),$(TOOLS))
 
-.PHONY: all build-system-checks deps update p2pd test $(TOOLS) clean_eth2_network_simulation_files eth2_network_simulation clean-testnet0 testnet0 clean-testnet1 testnet1 clean
+.PHONY: all build-system-checks deps bearssl update p2pd test $(TOOLS) clean_eth2_network_simulation_files eth2_network_simulation clean-testnet0 testnet0 clean-testnet1 testnet1 clean
 
 all: | build-system-checks $(TOOLS)
 
@@ -33,7 +33,11 @@ build-system-checks:
 		exit 1; \
 		}
 
-deps: | deps-common beacon_chain.nims p2pd
+deps: | deps-common beacon_chain.nims p2pd bearssl
+
+bearssl: | deps-common
+	+ cd vendor/nim-bearssl && \
+		$(ENV_SCRIPT) nimble buildBundledLib $(HANDLE_OUTPUT)
 
 #- deletes and recreates "beacon_chain.nims" which on Windows is a copy instead of a proper symlink
 update: | update-common
@@ -81,4 +85,6 @@ clean-testnet1:
 
 clean: | clean-common
 	rm -rf build/{$(TOOLS_CSV),all_tests,*_node}
+	+ cd vendor/nim-bearssl/bearssl/csources && \
+		$(MAKE) clean $(HANDLE_OUTPUT)
 
