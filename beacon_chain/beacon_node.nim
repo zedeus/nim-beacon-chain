@@ -1023,3 +1023,10 @@ when isMainModule:
         config.depositWeb3Url,
         config.depositContractAddress)
 
+  of query:
+    case config.queryCmd
+    of nimQuery:
+      echo "nim query: ", config.nimQueryExpression
+    of QueryCmd.get:
+      echo "get query: ", config.getQueryPath
+
