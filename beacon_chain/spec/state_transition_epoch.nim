@@ -234,7 +234,7 @@ proc process_justification_and_finalization*(
   ## and
   ## https://github.com/ethereum/eth2.0-specs/blob/v0.9.0/specs/core/0_beacon-chain.md#final-updates
   ## after which the state.previous_epoch_attestations is replaced.
-  trace "Non-attesting indices in previous epoch",
+  debug "Non-attesting indices in previous epoch",
     missing_all_validators=
       difference(active_validator_indices,
         toSet(mapIt(get_attesting_indices(state,
@@ -260,10 +260,16 @@ proc process_justification_and_finalization*(
       checkpoint = shortLog(state.current_justified_checkpoint),
       cat = "justification"
 
-  let matching_target_attestations_current =
-    get_matching_target_attestations(state, current_epoch)  # Current epoch
-  if get_attesting_balance(state, matching_target_attestations_current,
-      stateCache) * 3 >= get_total_active_balance(state) * 2:
+  let
+    matching_target_attestations_current =
+      get_matching_target_attestations(state, current_epoch)  # Current epoch
+    attesting_balance =
+      get_attesting_balance(state, matching_target_attestations_current, stateCache)
+    total_balance = get_total_active_balance(state)
+
+  debug "Epoch_transition_balances", attesting_balance, total_balance
+
+  if attesting_balance * 3 >= total_balance * 2:
     state.current_justified_checkpoint =
       Checkpoint(epoch: current_epoch,
                  root: get_block_root(state, current_epoch))
@@ -286,7 +292,8 @@ proc process_justification_and_finalization*(
     debug "Finalized with rule 234",
       current_epoch = current_epoch,
       checkpoint = shortLog(state.finalized_checkpoint),
-      cat = "finalization"
+      cat = "finalization",
+      justification_bits = state.justification_bits
 
   ## The 2nd/3rd most recent epochs are justified, the 2nd using the 3rd as
   ## source

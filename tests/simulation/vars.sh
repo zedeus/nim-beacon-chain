@@ -16,8 +16,8 @@ cd - &>/dev/null
 # When changing these, also update the readme section on running simulation
 # so that the run_node example is correct!
 NUM_VALIDATORS=${VALIDATORS:-192}
-NUM_NODES=${NODES:-6}
-NUM_MISSING_NODES=${MISSING_NODES:-1}
+NUM_NODES=${NODES:-2}
+NUM_MISSING_NODES=${MISSING_NODES:-0}
 
 SIMULATION_DIR="${SIM_ROOT}/data"
 METRICS_DIR="${SIM_ROOT}/prometheus"

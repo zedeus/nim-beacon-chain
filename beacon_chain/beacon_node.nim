@@ -336,7 +336,7 @@ proc proposeBlock(node: BeaconNode,
   #      production
   let (eth1data, deposits) = node.blockPool.withState(
       node.stateCache, BlockSlot(blck: head, slot: slot - 1)):
-    if node.mainchainMonitor.isNil:
+    if true or node.mainchainMonitor.isNil:
       let e1d =
         get_eth1data_stub(
           state.eth1_deposit_index, slot.compute_epoch_at_slot())
@@ -358,6 +358,10 @@ proc proposeBlock(node: BeaconNode,
         attestations:
           node.attestationPool.getAttestationsForBlock(state, slot),
         deposits: deposits)
+
+    debug "Proposing_block", totalAttestations = blockBody.attestations.len
+    for a in blockBody.attestations:
+      debug "attestation validations", total = a.aggregation_bits.len
 
     var
       newBlock = BeaconBlock(
@@ -397,6 +401,7 @@ proc proposeBlock(node: BeaconNode,
     blck = shortLog(newBlock),
     blockRoot = shortLog(newBlockRef.root),
     validator = shortLog(validator),
+    totalAttestations = newBlock.body.attestations.len,
     cat = "consensus"
 
   node.network.broadcast(topicBeaconBlocks, newBlock)
@@ -440,6 +445,7 @@ proc onAttestation(node: BeaconNode, attestation: Attestation) =
     node.blockPool.withState(node.stateCache, bs):
       node.attestationPool.add(state, attestedBlock, attestation)
   else:
+    debug "Unresolved_attestation"
     node.attestationPool.addUnresolved(attestation)
 
 proc onBeaconBlock(node: BeaconNode, blck: BeaconBlock) =
@@ -462,6 +468,9 @@ proc onBeaconBlock(node: BeaconNode, blck: BeaconBlock) =
   # is not yet resolved, neither will the attestations be!
   # TODO shouldn't add attestations if the block turns out to be invalid..
   for attestation in blck.body.attestations:
+    debug "Received attestation with",
+          validations = attestation.aggregation_bits.len,
+          signature = attestation.signature
     node.onAttestation(attestation)
 
 proc handleAttestations(node: BeaconNode, head: BlockRef, slot: Slot) =
@@ -527,6 +536,7 @@ proc handleAttestations(node: BeaconNode, head: BlockRef, slot: Slot) =
         if validator != nil:
           let ad = makeAttestationData(state, shard, blck.root)
           attestations.add((ad, committee.len, i, validator))
+          debug "attestation_from_validator", validatorIdx, indexInCommittee = i
 
     for a in attestations:
       traceAsyncErrors sendAttestation(

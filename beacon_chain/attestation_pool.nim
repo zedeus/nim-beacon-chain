@@ -210,7 +210,7 @@ proc add*(pool: var AttestationPool,
         a.validations.add(validation)
         pool.updateLatestVotes(state, attestationSlot, participants, a.blck)
 
-        info "Attestation resolved",
+        info "Voting attestation resolved",
           attestationData = shortLog(attestation.data),
           validations = a.validations.len(),
           current_epoch = get_current_epoch(state),
@@ -230,7 +230,7 @@ proc add*(pool: var AttestationPool,
     ))
     pool.updateLatestVotes(state, attestationSlot, participants, blck)
 
-    info "Attestation resolved",
+    info "New attestation resolved",
       attestationData = shortLog(attestation.data),
       current_epoch = get_current_epoch(state),
       target_epoch = attestation.data.target.epoch,
@@ -283,7 +283,11 @@ proc getAttestationsForBlock*(
     slotDequeIdx = int(attestationSlot - pool.startingSlot)
     slotData = pool.slots[slotDequeIdx]
 
+
+  debug "found_slot_attestations", total = slotData.attestations.len
+
   for a in slotData.attestations:
+    debug "attestation_validation", total = a.validations.len
     var
       attestation = Attestation(
         aggregation_bits: a.validations[0].aggregation_bits,
@@ -308,6 +312,7 @@ proc getAttestationsForBlock*(
     #      to include a broken attestation
     if not check_attestation(
         state, attestation, {nextSlot}, cache):
+      warn "check_attestation_failed"
       continue
 
     for v in a.validations[1..^1]:
