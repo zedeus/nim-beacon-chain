@@ -9,7 +9,7 @@
 # See https://github.com/ethereum/eth2.0-specs/blob/master/specs/simple-serialize.md
 
 import
-  endians, stew/shims/macros, options, algorithm, options,
+  endians, stew/shims/macros, options, algorithm, sugar,
   stew/[bitops2, bitseqs, objects, varints, ptrops], stint,
   faststreams/input_stream, serialization, serialization/testing/tracing,
   nimcrypto/sha2, blscurve, eth/common,
@@ -538,7 +538,7 @@ func hashTreeRootImpl[T](x: T): Eth2Digest =
 func maxChunksCount(T: type, maxLen: static int64): int64 {.compileTime.} =
   when T is BitList:
     (maxLen + bitsPerChunk - 1) div bitsPerChunk
-  elif T is seq:
+  elif T is seq or T is List:
     type E = ElemType(T)
     when E is BasicType:
       (maxLen * sizeof(E) + bytesPerChunk - 1) div bytesPerChunk
@@ -558,16 +558,20 @@ func hash_tree_root*(x: auto): Eth2Digest =
 
     when T is BitList:
       result = merkelizer.bitlistHashTreeRoot(BitSeq valueOf(x))
-    elif T is seq:
+    elif T is seq or T is List:
       type E = ElemType(T)
+      when T is seq:
+        type Undistinct = T
+      else:
+        type Undistinct = distinctBase(T)
       let contentsHash = when E is BasicType:
         merkelizeSerializedChunks(merkelizer, valueOf(x))
       else:
-        for elem in valueOf(x):
+        for elem in Undistinct(valueOf(x)):
           let elemHash = hash_tree_root(elem)
           merkelizer.addChunk(elemHash.data)
         merkelizer.getFinalHash()
-      result = mixInLength(contentsHash, valueOf(x).len)
+      result = mixInLength(contentsHash, valueOf(x).Undistinct.len)
     else:
       unsupported T # This should never happen
   else:

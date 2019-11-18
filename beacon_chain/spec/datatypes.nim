@@ -18,7 +18,7 @@
 # types / composition
 
 import
-  macros, hashes, json, strutils, tables,
+  macros, hashes, json, strutils, tables, algorithm, sets,
   stew/[byteutils, bitseqs], chronicles, eth/common,
   ../version, ../ssz/types, ./crypto, ./digest
 
@@ -612,6 +612,9 @@ when useListType:
   template `==`*[T; N](a, b: List[T, N]): bool = seq[T](a) == seq[T](b)
   template asSeq*[T; N](x: List[T, N]): auto = seq[T](x)
   template `&`*[T; N](a, b: List[T, N]): List[T, N] = seq[T](a) & seq[T](b)
+  template items*[T; N](a: List[T, N]): T = items(seq[T](a))
+  template sorted*[T; N](a: List[T, N], cmp: proc (x, y: T): int): List[T, N] = List[T, N](sorted(seq[T](a)))
+  template toHashSet*[T, N](keys: List[T, N]): HashSet[T] = toHashSet(seq[T](keys))
 else:
   template asSeq*[T; N](x: List[T, N]): auto = x
 

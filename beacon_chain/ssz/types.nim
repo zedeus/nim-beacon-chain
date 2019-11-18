@@ -4,7 +4,7 @@ import
   serialization/[object_serialization, errors]
 
 const
-  useListType* = false
+  useListType* = true
   offsetSize* = 4
 
 type

@@ -384,7 +384,9 @@ func get_indexed_attestation*(state: BeaconState, attestation: Attestation,
   ## for no obvious reason, verifies it.
   IndexedAttestation(
     attesting_indices:
-      sorted(mapIt(attesting_indices.toSeq, it.uint64), system.cmp),
+      List[uint64, MAX_VALIDATORS_PER_COMMITTEE](
+        sorted(mapIt(attesting_indices.toSeq, it.uint64), system.cmp)
+      ),
     data: attestation.data,
     signature: attestation.signature
   )

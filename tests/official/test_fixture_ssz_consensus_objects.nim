@@ -56,12 +56,16 @@ const Unsupported = toHashSet([
     # "Eth1Data",           #
     # "Fork",               #
     # "HistoricalBatch",    #
-    "IndexedAttestation",   # HashTreeRoot KO
+    # "IndexedAttestation",   # HashTreeRoot KO
     # "PendingAttestation", # OK on minimal, KO on mainnet
     # "ProposerSlashing",   #
     "Validator",            # HashTreeRoot KO
     # "VoluntaryExit"       #
   ])
+
+# Workaround lack of custom errors in check template:
+# https://github.com/status-im/nim-beacon-chain/issues/553
+type TypeToDebug = IndexedAttestation
 
 const UnsupportedMainnet = toHashSet([
     "PendingAttestation",   # HashTreeRoot KO
@@ -79,7 +83,8 @@ proc checkSSZ(T: typedesc, dir: string, expectedHash: SSZHashTreeRoot, skip = Sk
   new deserialized
   deserialized[] = SSZ.loadFile(dir/"serialized.ssz", T)
 
-  # echo "Dir: ", dir
+  when T is TypeToDebug:
+    echo "Dir: ", dir
   if not(skip == SkipHashTreeRoot):
     check: expectedHash.root == "0x" & toLowerASCII($deserialized.hashTreeRoot())
   if expectedHash.signing_root != "" and not(skip == SkipSigningRoot):
