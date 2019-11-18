@@ -82,16 +82,8 @@ method formatMsg*(err: ref SszSizeMismatchError, filename: string): string {.gcs
   # TODO: implement proper error string
   "Serialisation error while processing " & filename
 
-when false:
-  # TODO: Nim can't handle yet this simpler definition. File an issue.
-  template valueOf[T; N](x: TypeWithMaxLen[T, N]): auto = T(x)
-else:
-  proc unwrapImpl[T; N: static int64](x: ptr TypeWithMaxLen[T, N]): ptr T =
-    cast[ptr T](x)
+template valueOf[T; N](x: TypeWithMaxLen[T, N]): auto = T(x)
 
-  template valueOf(x: TypeWithMaxLen): auto =
-    let xaddr = unsafeAddr x
-    unwrapImpl(xaddr)[]
 
 template sszList*(x: seq|array, maxLen: static int64): auto =
   TypeWithMaxLen[type(x), maxLen](x)

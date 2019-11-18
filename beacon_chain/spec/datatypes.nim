@@ -206,24 +206,24 @@ type
 
     state_roots*: array[SLOTS_PER_HISTORICAL_ROOT, Eth2Digest]
 
-    historical_roots*: seq[Eth2Digest]  ##\
-    ## model List with HISTORICAL_ROOTS_LIMIT limit as seq
-    ## TODO bound explicitly somewhere
+    historical_roots*: List[Eth2Digest, HISTORICAL_ROOTS_LIMIT]
 
     # Eth1
     eth1_data*: Eth1Data
 
-    eth1_data_votes*: seq[Eth1Data] ##\
-    ## As with `hitorical_roots`, this is a `List`. TODO bound explicitly.
+    eth1_data_votes*: List[Eth1Data, SLOTS_PER_ETH1_VOTING_PERIOD]
 
     eth1_deposit_index*: uint64
 
     # Registry
     validators*: seq[Validator]
-    balances*: seq[uint64] ##\
+    balances*: seq[Gwei]
     ## Validator balances in Gwei!
-    ## Also more `List`s which need to be bounded explicitly at
-    ## VALIDATOR_REGISTRY_LIMIT
+
+    # TODO: but cannot instantiate
+    # validators*: List[Validator, int64 VALIDATOR_REGISTRY_LIMIT]
+    # balances*: List[uint64, int64 VALIDATOR_REGISTRY_LIMIT] ##\
+
 
     # Shuffling
     randao_mixes*: array[EPOCHS_PER_HISTORICAL_VECTOR, Eth2Digest]
@@ -233,8 +233,8 @@ type
     ## Per-epoch sums of slashed effective balances
 
     # Attestations
-    previous_epoch_attestations*: seq[PendingAttestation]
-    current_epoch_attestations*: seq[PendingAttestation]
+    previous_epoch_attestations*: List[PendingAttestation, MAX_ATTESTATIONS * SLOTS_PER_EPOCH]
+    current_epoch_attestations*: List[PendingAttestation, MAX_ATTESTATIONS * SLOTS_PER_EPOCH]
 
     # Finality
     justification_bits*: uint8 ##\
@@ -357,19 +357,19 @@ macro fieldMaxLen*(x: typed): untyped =
     return newLit(0)
 
   let size = case $x[1]
-             of "pubkeys",
-                "compact_validators",
-                "aggregation_bits",
-                "custody_bits": int64(MAX_VALIDATORS_PER_COMMITTEE)
-             of "proposer_slashings": MAX_PROPOSER_SLASHINGS
-             of "attester_slashings": MAX_ATTESTER_SLASHINGS
+             # IndexedAttestation
+             of "attesting_indices": MAX_VALIDATORS_PER_COMMITTEE
+             # BeaconBlockBody
+             of "proposer_slashings",
+                "attester_slashings": MAX_ATTESTER_SLASHINGS
              of "attestations": MAX_ATTESTATIONS
              of "deposits": MAX_DEPOSITS
              of "voluntary_exits": MAX_VOLUNTARY_EXITS
+             # BeaconState
              of "historical_roots": HISTORICAL_ROOTS_LIMIT
              of "eth1_data_votes": SLOTS_PER_ETH1_VOTING_PERIOD
-             of "validators": VALIDATOR_REGISTRY_LIMIT
-             of "balances": VALIDATOR_REGISTRY_LIMIT
+             of "validators",
+                "balances": int VALIDATOR_REGISTRY_LIMIT
              of "previous_epoch_attestations",
                 "current_epoch_attestations": MAX_ATTESTATIONS *
                                               SLOTS_PER_EPOCH
