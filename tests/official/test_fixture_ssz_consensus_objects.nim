@@ -73,20 +73,14 @@ const UnsupportedMainnet = toHashSet([
     "BeaconBlock"
   ])
 
-type Skip = enum
-  SkipNone
-  SkipHashTreeRoot
-  SkipSigningRoot
-
-proc checkSSZ(T: typedesc, dir: string, expectedHash: SSZHashTreeRoot, skip = SkipNone) =
+proc checkSSZ(T: typedesc, dir: string, expectedHash: SSZHashTreeRoot) =
   # Deserialize into a ref object to not fill Nim stack
   var deserialized: ref T
   new deserialized
   deserialized[] = SSZ.loadFile(dir/"serialized.ssz", T)
 
-  if not(skip == SkipHashTreeRoot):
-    check: expectedHash.root == "0x" & toLowerASCII($deserialized.hashTreeRoot())
-  if expectedHash.signing_root != "" and not(skip == SkipSigningRoot):
+  check: expectedHash.root == "0x" & toLowerASCII($deserialized.hashTreeRoot())
+  if expectedHash.signing_root != "":
     check: expectedHash.signing_root == "0x" & toLowerASCII($deserialized[].signingRoot())
 
   # TODO check the value
