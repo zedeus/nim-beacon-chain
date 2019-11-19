@@ -59,12 +59,12 @@ const Unsupported = toHashSet([
     # "IndexedAttestation", #
     # "PendingAttestation", #
     # "ProposerSlashing",   #
-    # "Validator",            # HashTreeRoot KO
+    # "Validator",          #
     # "VoluntaryExit"       #
   ])
 
 const UnsupportedMainnet = toHashSet([
-    "PendingAttestation",   # HashTreeRoot KO
+    "PendingAttestation",
     "BeaconState",
     "AttesterSlashing",
     "BeaconBlockBody",

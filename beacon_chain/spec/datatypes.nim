@@ -355,8 +355,9 @@ macro fieldMaxLen*(x: typed): untyped =
              # Obsolete
              of "pubkeys",
                 "compact_validators",
-                "aggregation_bits",
                 "custody_bits": int64(MAX_VALIDATORS_PER_COMMITTEE)
+             # Attestation
+             of "aggregation_bits": MAX_VALIDATORS_PER_COMMITTEE
              # IndexedAttestation
              of "attesting_indices": MAX_VALIDATORS_PER_COMMITTEE
              # BeaconBlockBody
