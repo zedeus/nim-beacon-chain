@@ -448,6 +448,7 @@ template ethTimeUnit(typ: type) {.dirty.} =
   proc `mod`*(x: typ, y: uint64): uint64 {.borrow.}
   proc `div`*(x: typ, y: uint64): uint64 {.borrow.}
   proc `div`*(x: uint64, y: typ): uint64 {.borrow.}
+  proc `+`*(x: typ, y: typ): uint64 {.borrow.}
   proc `-`*(x: typ, y: typ): uint64 {.borrow.}
 
   proc `*`*(x: typ, y: uint64): uint64 {.borrow.}

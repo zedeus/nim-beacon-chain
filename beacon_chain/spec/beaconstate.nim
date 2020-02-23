@@ -407,7 +407,7 @@ func get_attesting_indices*(state: BeaconState,
       result.incl index
 
 # https://github.com/ethereum/eth2.0-specs/blob/v0.10.1/specs/phase0/beacon-chain.md#get_indexed_attestation
-func get_indexed_attestation(state: BeaconState, attestation: Attestation,
+func get_indexed_attestation*(state: BeaconState, attestation: Attestation,
     stateCache: var StateCache): IndexedAttestation =
   # Return the indexed attestation corresponding to ``attestation``.
   let
