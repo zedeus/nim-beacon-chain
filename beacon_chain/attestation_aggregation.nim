@@ -5,10 +5,6 @@
 #   * Apache v2 license (license terms in the root directory or at http://www.apache.org/licenses/LICENSE-2.0).
 # at your option. This file may not be copied, modified, or distributed except according to those terms.
 
-# Have an an aggregated aggregation ready for broadcast at
-# SECONDS_PER_SLOT * 2 / 3, i.e. 2/3 through relevant slot
-# intervals.
-#
 # The other part is arguably part of attestation pool -- the validation's
 # something that should be happing on receipt, not aggregation per se. In
 # that part, check that messages conform -- so, check for each type
@@ -56,12 +52,18 @@ proc aggregate_attestations*(
     privkey: ValidatorPrivKey): Option[AggregateAndProof] =
   # TODO alias CommitteeIndex to actual type then convert various uint64's here
 
+  if state.slot < 3:
+    return none(AggregateAndProof)
+
+  # TODO handle epoch boundary condition better; this is ugly kludge
+  # makeAttestationData() checks slot's epoch is state.slot's epoch currently
+  if state.slot mod SLOTS_PER_EPOCH == 0:
+    return none(AggregateAndProof)
+
   let
-    slot = state.slot - 2
+    slot = state.slot - 1
     slot_signature = get_slot_signature(state, slot, privkey)
 
-  if slot < 0:
-    return none(AggregateAndProof)
   doAssert slot + ATTESTATION_PROPAGATION_SLOT_RANGE >= state.slot
   doAssert state.slot >= slot
 
@@ -81,6 +83,4 @@ proc aggregate_attestations*(
         aggregate: attestation,
         selection_proof: slot_signature))
 
-  # TODO in catch-up mode, we could get here, so probably shouldn't assert
-  doAssert false
   none(AggregateAndProof)
