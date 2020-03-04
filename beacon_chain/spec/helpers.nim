@@ -10,8 +10,6 @@
 import
   # Standard lib
   math, endians,
-  # Third-party
-  blscurve, # defines Domain
   # Internal
   ./datatypes, ./digest, ../ssz
 
